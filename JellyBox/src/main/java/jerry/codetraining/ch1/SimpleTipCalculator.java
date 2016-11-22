@@ -2,42 +2,53 @@ package jerry.codetraining.ch1;
 
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.function.BiFunction;
-import java.util.function.DoubleFunction;
-import java.util.function.Function;
 
-public class SimpleTipCalculator {
-
+class SimpleTipCalculator {
+    private static final float FLOAT_100=100f;
     private int bill, percentage;
     private float tip, total;
-    NumberFormat format;
-
+    private final NumberFormat format;
     public SimpleTipCalculator() {
         format = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
+        bill=0;
+        percentage=0;
+    }
+    void input(Object bill, Object percentage) {
+        inputBillAmount(bill);
+        inputPercentage(percentage);
     }
 
-    public void input(int bill, int percentage) {
-        this.bill = bill;
-        this.percentage = percentage;
+    public SimpleTipCalculator inputBillAmount(Object bill) {
+        isValid(bill);
+        this.bill = (Integer) bill;
+        return this;
     }
-
-    public void process() {
-//		DoubleFunction<R>
-        //((float) bill*(percentage/100f));
-        this.tip = bill*(percentage/100f);
-//		Function<float, float> calculate = (float a,float b)->a*b/100f;
+    public SimpleTipCalculator inputPercentage(Object percentage) {
+        isValid(percentage);
+        this.percentage =  (Integer)percentage;
+        return this;
+    }
+    private void isValid(Object object) {
+        if(! (object instanceof Integer)){
+            throw new IllegalArgumentException("Please enter a valid number.");
+        }
+    }
+    SimpleTipCalculator process() {
+        this.tip = bill*(percentage/FLOAT_100);
         this.total = bill + tip;
+        return this;
     }
-
-    public String output() {
+    String output() {
         return String.format("Tip: %s\nTotal: %s", getTip(), getTotal());
     }
-
-    public String getTip() {
-        return format.format(tip);
+    String getTip() {
+        return format.format(roundUp(tip));
+    }
+    String getTotal() {
+        return format.format(roundUp(total));
     }
 
-    public String getTotal() {
-        return format.format(total);
+    float roundUp(float targetNumber) {
+        return ( (int) (targetNumber*FLOAT_100+0.5f))/FLOAT_100;
     }
 }
