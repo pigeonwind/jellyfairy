@@ -1,6 +1,7 @@
 package jerry.codetraining.ch1;
 
 import com.jerry.util.function.IntegerParser;
+import com.jerry.validation.Validator;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -14,6 +15,7 @@ class SimpleTipCalculator {
     private final NumberFormat format;
     private IntegerParser integerParser;
     private DoubleUnaryOperator roundUpOperator;
+    private Validator inteagerValidator, positiveValidator;
 
     public SimpleTipCalculator() {
         format = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
@@ -21,22 +23,19 @@ class SimpleTipCalculator {
         percentage=0;
         integerParser = (Object object)-> (Integer)object;
         roundUpOperator = (double floatNum) -> ( (int) (floatNum*DOUBLE_100+0.5d))/DOUBLE_100;
+        inteagerValidator = new Validator( (Object target)-> target instanceof Integer );
+        positiveValidator = new Validator( (Object target)-> (Integer)target >= 0 );
     }
     void input(Object bill, Object percentage) throws Exception {
         this.bill = parseInt( bill, integerParser);
         this.percentage = parseInt( percentage, integerParser);
     }
-    private void isValid(Object object) throws Exception {
-        if( object instanceof Integer){
-            if(((Integer) object)<0)
-                trowException("Please enter a valid number (not minus).)");
-        }else{
-            trowException("Please enter a valid number.)");
-        }
-    }
     public Integer parseInt(Object object ,IntegerParser parser) throws Exception{
-        isValid( object );
-        return parser.parseInt(object);
+        if(inteagerValidator.validate( object ) && positiveValidator.validate( object ) ) {
+            return parser.parseInt( object );
+        }else{
+            throw new RuntimeException("Please enter a valid number.)");
+        }
     }
     public SimpleTipCalculator inputBillAmount(Object bill) throws Exception {
         this.bill = parseInt( bill,integerParser );
@@ -46,11 +45,6 @@ class SimpleTipCalculator {
         this.percentage = parseInt( percentage ,integerParser );
         return this;
     }
-
-    private void trowException(String errorMessge) throws Exception {
-        throw new RuntimeException(errorMessge);
-    }
-
     SimpleTipCalculator process() {
         this.tip = calculate( bill,percentage,(Integer a, Object b) -> a*((Integer) b/DOUBLE_100));
         this.total =calculate( bill,tip, (Integer a, Object b)-> a+(double)b );
