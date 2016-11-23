@@ -26,6 +26,7 @@ public class SimpleTipCalculatorDriverGUI {
         calculator = new SimpleTipCalculator();
         billAmountTextField.addActionListener((ActionEvent e)-> outPutTextArea.setText(calculator.inputBillAmount(Integer.parseInt(billAmountTextField.getText())).process().output()));
         percentageSlider.addChangeListener((ChangeEvent e)-> outPutTextArea.setText(calculator.inputPercentage(percentageSlider.getValue()).process().output()));
+
     }
     public static void main(String[] args){
         JFrame frame = new JFrame("Simple Tip Calculator Driver GUI");
