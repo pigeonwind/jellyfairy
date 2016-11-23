@@ -18,13 +18,7 @@ public class SimpleTipCalculatorTest {
 		int percentage = 15;
 		tip = "$30.00";
 		total = "$230.00";
-		StringBuilder result = new StringBuilder();
-		result.append("Tip: ");
-		result.append(tip);
-		result.append("\n");
-		result.append("Total: ");
-		result.append(total);
-		output = result.toString();
+		output =  String.format("Tip: %s\nTotal: %s",tip,total);
 		calculator = new SimpleTipCalculator();
 		calculator.input(bill, percentage);
 		calculator.process();
@@ -58,50 +52,55 @@ public class SimpleTipCalculatorTest {
 		// given
 		String expected = output;
 		// when
-		String actual = calculator.output();
+		String actual = calculator.toString();
 		System.out.println(expected);
 		System.out.println(actual);
 		// then
 		assertThat(actual, is(expected));
 	}
-
 	@Test
 	public void roundUpTest() throws Exception {
 		System.out.printf("=================== %s START ===================\n", "roundUpTest");
 		// given
-		float roundedNum = 10.007f;
-		float expected = 10.01f;
+		double roundedNum = 10.007d;
+		double expected = 10.01d;
 		// when
-		float actual = calculator.roundUp(roundedNum);
+		double actual = calculator.roundUp(roundedNum);
 		System.out.println(expected);
 		System.out.println(actual);
 		// then
 		assertThat(actual, is(expected));
 	}
-
 	@Test
 	public void roundDownTest() throws Exception {
 		System.out.printf("=================== %s START ===================\n", "roundDownTest");
 		// given
-		float roundedNum = 10.004f;
-		float expected = 10.00f;
+		double roundedNum = 10.004d;
+		double expected = 10.00d;
 		// when
-		float actual = calculator.roundUp(roundedNum);
+		double actual = calculator.roundUp(roundedNum);
 		System.out.println(expected);
 		System.out.println(actual);
 		// then
 		assertThat(actual, is(expected));
 	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void expectTest() throws Exception {
-		System.out.printf("=================== %s START ===================\n", "expectTest");
-
+	@Test(expected = RuntimeException.class)
+	public void wrongInputParameterStringValueExpectExceptionTest() throws Exception {
+		System.out.printf("=================== %s START ===================\n", "wrongInputParameterStringValueExpectExceptionTest");
 		// given
 		String bill="100";
 		int percentage=15;
 		// when
 		calculator.input(bill,percentage);
+		// then
+	}
+	@Test(expected = RuntimeException.class)
+	public void wrongInputParameterMinusValueExpectExceptionTest() throws Exception {
+		System.out.printf("=================== %s START ===================\n", "wrongInputParameterMinusValueExpectExceptionTest");
+		// given
+       int minusValue = -100;
+		// when
+		calculator.inputBillAmount(minusValue);
 		// then
 	}
 }
