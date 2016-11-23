@@ -18,7 +18,6 @@ public class SimpleTipCalculatorTest {
 		int percentage = 15;
 		tip = "$30.00";
 		total = "$230.00";
-
 		StringBuilder result = new StringBuilder();
 		result.append("Tip: ");
 		result.append(tip);
