@@ -97,6 +97,7 @@ public class SimpleTipCalculatorTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void expectTest() throws Exception {
 		System.out.printf("=================== %s START ===================\n", "expectTest");
+
 		// given
 		String bill="100";
 		int percentage=15;
