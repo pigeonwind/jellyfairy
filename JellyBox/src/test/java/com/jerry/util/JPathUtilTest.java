@@ -42,7 +42,7 @@ public class JPathUtilTest {
 		}
 		expected=(String) container;
 		// when
-		String actual=JPathUtil.getString(root,path);
+		String actual=JPathUtil.getString();
 		// then
 		assertThat(actual, is(expected));
 	}

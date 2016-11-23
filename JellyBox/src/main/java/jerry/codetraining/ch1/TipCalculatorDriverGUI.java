@@ -6,13 +6,12 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * Created by jerryDev on 2016. 11. 23..
  */
-public class TipCalculatorDriverGUI implements ActionListener, ChangeListener {
+class TipCalculatorDriverGUI implements ActionListener, ChangeListener {
     private JPanel tipCalculatorMainPanel;
     private JLabel billAmount, percentage;
     private JTextField billAmountTextField;
@@ -20,10 +19,10 @@ public class TipCalculatorDriverGUI implements ActionListener, ChangeListener {
     private JTextArea outputTextArea;
     private SimpleTipCalculator calculator;
 
-    public TipCalculatorDriverGUI(SimpleTipCalculator calculator) {
+    private TipCalculatorDriverGUI(SimpleTipCalculator calculator) {
         this.calculator = calculator;
-        billAmountTextField.addActionListener( this::actionPerformed );
-        percentageSlider.addChangeListener( this::stateChanged );
+        billAmountTextField.addActionListener( this );
+        percentageSlider.addChangeListener( this );
     }
 
     @Override
