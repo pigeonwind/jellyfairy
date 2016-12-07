@@ -40,3 +40,4 @@ public class MultiDelimiterTokenizerTest {
 		assertThat(actual, is(expected));
 	}
 }
+

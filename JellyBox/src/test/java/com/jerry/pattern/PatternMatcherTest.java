@@ -57,7 +57,8 @@ public class PatternMatcherTest {
 			remainingString=container[1];
 		}
 		// when
-		Object actual=null;
+		PatternFormatParser parser = new PatternFormatParser(patternFormats);
+		Object actual=parser.parse(targetLogline);
 		// then
 		System.out.println(expected);
 		assertThat(actual,is(expected));
