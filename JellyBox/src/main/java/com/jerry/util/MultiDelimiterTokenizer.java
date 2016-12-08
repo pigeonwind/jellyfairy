@@ -1,8 +1,6 @@
 package com.jerry.util;
 
-import java.util.StringTokenizer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * @author jerry
@@ -11,40 +9,48 @@ import java.util.function.Function;
 public class MultiDelimiterTokenizer {
 	private int tokenCount;
 	private String surplusString;
-	BiFunction <String,Character,Integer> getIndexOfFromZero;
-	
+	BiFunction<String, Character, Integer> getIndexOfFromZero;
+	BiFunction<String,Integer,String> headSubString,tailSubString;
 	public MultiDelimiterTokenizer(String surplusString) {
 		this.surplusString = surplusString;
-		this.tokenCount=0;
-		getIndexOfFromZero = (String target, Character character) -> target.indexOf(character );
+		this.tokenCount = 0;
+		getIndexOfFromZero = (String target, Character character) -> target.indexOf(character);
+		tailSubString = (String string, Integer startOffset)-> string.substring(startOffset, string.length());
+		headSubString = (String string, Integer endOffset)-> string.substring(0, endOffset);
 	}
 
 	public String pop(String startDelimiter, String endDelimter) {
-		String targetString,head,result,tail;
-		targetString =  surplusString;
-		int startDelimiterOffset,endDelimiterOffset;
-			startDelimiterOffset =  targetString.indexOf(startDelimiter.charAt(0));
-			endDelimiterOffset = targetString.indexOf(endDelimter.charAt(0));
-
-			result = targetString.substring(startDelimiterOffset+1, endDelimiterOffset);
-			head = targetString.substring( 0,startDelimiterOffset );
-			tail = targetString.substring( endDelimiterOffset+1, targetString.length() );
-			surplusString =  head.concat( tail );
-			tokenCount++;
-			System.out.printf("remain [%s], return[%s], tokenCount[%d]\n",surplusString,result,tokenCount);
-		return result;
+		String targetString = surplusString;
+		int startDelimiterOffset, endDelimiterOffset;
+		startDelimiterOffset = getOffset(surplusString, startDelimiter);
+		endDelimiterOffset = getOffset(surplusString, endDelimter);
+		
+		setSurplusStringWithtokenCountUp(subString(targetString, startDelimiterOffset, headSubString)+subString(targetString,endDelimiterOffset + 1,tailSubString));
+//		System.out.printf("remain [%s], return[%s], tokenCount[%d]\n", surplusString, result, tokenCount);
+		return targetString.substring(startDelimiterOffset + 1, endDelimiterOffset);
 	}
-	public String hasNext(String delimter){
-		String targetString,result,tail;
-		targetString =  surplusString;
+	public String hasNext(String delimter) {
+		String targetString = surplusString;
 		int delimitterOffset;
-			delimitterOffset = targetString.indexOf(delimter.charAt(0));
-			result = targetString.substring(0 ,delimitterOffset );
-		    tail = targetString.substring( delimitterOffset+1,targetString.length()  );
-		    surplusString = tail;
-			tokenCount++;
-			System.out.printf("remain [%s], return[%s], tokenCount[%d]\n",surplusString,result,tokenCount);
-		return result;
+		delimitterOffset =getOffset(targetString, delimter);
+		
+		setSurplusStringWithtokenCountUp(subString(targetString, delimitterOffset + 1,tailSubString));
+//		System.out.printf("remain [%s], return[%s], tokenCount[%d]\n", surplusString, result, tokenCount);
+		return subString(targetString, delimitterOffset, headSubString);
 	}
-	
+	private void setSurplusStringWithtokenCountUp(String surplusString) {
+		this.surplusString = surplusString;
+		tokenCount++;
+	}
+	private String subString(String targetString, int startOffset, BiFunction<String, Integer, String> biFunction) {
+		return biFunction.apply(targetString, startOffset);
+	}
+	private int getOffset(String targetString, String delmiter) {
+		return targetString.indexOf(delmiter.charAt(0));
+	}
+	public int getTokenCount(){
+		return this.tokenCount;
+	}
+
+
 }

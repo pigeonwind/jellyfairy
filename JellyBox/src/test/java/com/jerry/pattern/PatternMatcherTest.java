@@ -3,8 +3,6 @@ package com.jerry.pattern;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -42,8 +40,11 @@ public class PatternMatcherTest {
 		String patternFormat = "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"";
 		String delimeter = " ";
 		LinkedList<String> patternFormats=new LinkedList<>(Arrays.asList(patternFormat.split(delimeter)));
+		LinkedList<String> patternFormats2=(LinkedList<String>) patternFormats.clone();
 		System.out.println(patternFormats);
+		PatternFormatParser parser = new PatternFormatParser(patternFormats2);
 		expected = getExpectedData(patternFormats);
+
 		String remainingString = targetLogline;
 		String splitTargetSting;
 		String[] container=null;
@@ -57,7 +58,7 @@ public class PatternMatcherTest {
 			remainingString=container[1];
 		}
 		// when
-		PatternFormatParser parser = new PatternFormatParser(patternFormats);
+
 		Object actual=parser.parse(targetLogline);
 		// then
 		System.out.println(expected);
