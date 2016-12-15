@@ -1,6 +1,8 @@
 package com.jerry.pattern;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import com.jerry.util.MultiDelimiterTokenizer;
 
@@ -14,12 +16,14 @@ public class PatternFormatParser {
 
 	public Object parse(String targetLogline) {
 		tokenizer = new MultiDelimiterTokenizer(targetLogline);
+		Map<String,String> lineMap=new HashMap<>();
 		String pattern;
+		Map<String,ColumnParser> parserMap = new HashMap<>();
+		
+		String matchedString;
 		while(!patternFormats.isEmpty()){
 			pattern = patternFormats.pop();
-			System.out.println(pattern);
 		}
-		
-		return null;
+		return lineMap;
 	}
 }
