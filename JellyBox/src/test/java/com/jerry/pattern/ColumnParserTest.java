@@ -150,6 +150,7 @@ public class ColumnParserTest {
 		// then
 		assertThat(actual, is(expect));
 	}
+	//https://docs.logentries.com/docs/regex Âü°í
 	@Test
 	public void matchRequestLineTest() throws Exception {
 		System.out.printf("=================== %s START ===================\n", "matchRequestLineTest");
