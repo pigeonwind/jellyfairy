@@ -18,7 +18,7 @@ public class PatternFormatParser {
 		tokenizer = new MultiDelimiterTokenizer(targetLogline);
 		Map<String,String> lineMap=new HashMap<>();
 		String pattern;
-		Map<String,ColumnParser> parserMap = new HashMap<>();
+		Map<String,RegexParser> parserMap = new HashMap<>();
 		
 		String matchedString;
 		while(!patternFormats.isEmpty()){

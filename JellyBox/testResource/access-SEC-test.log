@@ -1,0 +1,5 @@
+/logs/ihs/access-SEC_log.20161004:127.0.0.1 - - [04/Oct/2016:17:27:11 +0900] "GET /SFDC01ModWeb/sca/LAY024524WS HTTP/1.1" 404 86 0
+/logs/ihs/access-SEC_log.20161006:127.0.0.1 - - [06/Oct/2016:14:15:50 +0900] "GET /favicon.ico HTTP/1.1" 404 275 0
+/logs/ihs/access-SEC_log.20161006:127.0.0.1 - - [06/Oct/2016:15:40:16 +0900] "GET /ESBWSAdapterWeb/sca/ProviderServiceWS HTTP/1.1" 404 92 0
+/logs/ihs/access-SEC_log.20161006:127.0.0.1 - - [06/Oct/2016:15:41:08 +0900] "-" 408 - 0
+/logs/ihs/access-SEC_log.20161006:127.0.0.1 - - [06/Oct/2016:15:52:33 +0900] "GET /BIGDATA01ModWeb/sca/LAY023527WS HTTP/1.1" 404 86 0

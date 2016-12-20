@@ -14,22 +14,22 @@ import org.junit.Test;
 
 public class ColumnParserTest {
 	String targetLogline;
-	String ipaddressPattern, userIDPattern,bracketPattern,quotationPattern,spacePattern;//,
+	String ipaddressPattern, userIDPattern,bracketPattern,quotationPattern,spacePattern,spaceNumberPattern;//,
 	String leftCollonRightSpacePattern,leftQuotationPattern,leftQutationSpaceRightSpacePattern,leftSpaceRightQuotatoinPattern;
 	int fixedLengthDatePattern;
-	ColumnParser regexParser, fixedLengthParser;
+	RegexParser regexParser, fixedLengthParser;
 	StringExtractor extractor;
-	UnaryOperator<String> originalReturer;
+	UnaryOperator<String> noActionOperator;
 
 	@Before
 	public void setUp() throws Exception {
-		targetLogline = "127.0.0.1 - frank [05/Oct/2016:10:16:44 +0900] \"GET /apache_pb.gif HTTP/1.0\" 200 2326 \"http://www.example.com/start.html\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"";
+		targetLogline = "127.0.0.1 - frank [05/Oct/2016:10:16:44 +0900] \"GET /apache_pb.gif HTTP/1.0\" 200 2326 0";
 		ipaddressPattern = "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 		userIDPattern = " (.*?) ";//"[\\u0020]"
 		bracketPattern = "\\[(.*?)\\]";
 		quotationPattern = "\"(.*?)\"";
 		spacePattern = " (.*?) ";
-
+		spaceNumberPattern = " (\\d*?) (\\d*?) ";
 		leftCollonRightSpacePattern = ":(.*?) ";
 		leftQuotationPattern ="\"(.*?) ";
 		leftSpaceRightQuotatoinPattern = " (.*?)\"";
@@ -40,7 +40,7 @@ public class ColumnParserTest {
 		extractor = (String targetLine, UnaryOperator<String> preProcessor, UnaryOperator<String> mainProcessor, UnaryOperator<String> postProcessor) ->
 				(String)preProcessor.andThen(mainProcessor).andThen( postProcessor).apply( targetLine );
 
-		originalReturer = (String line)->line;
+		noActionOperator = (String line)->line;
 		regexParser = (String line, Object columnRegex) -> {
 			Pattern pattern = Pattern.compile((String)columnRegex);
 			Matcher matcher = pattern.matcher(line);
@@ -86,8 +86,7 @@ public class ColumnParserTest {
 		String surplusString = targetLogline;
 		String expect = "127.0.0.1";
 		// when
-		String actual = (String) extractor.extract(surplusString,originalReturer,(String line)-> (String)regexParser.parse(line,regexPattern),originalReturer);
-//		String actual = (String) regexParser.parse(surplusString, regexPattern);
+		String actual = (String) extractor.extract(surplusString,noActionOperator,(String line)-> (String)regexParser.parse(line,regexPattern),noActionOperator);
 		// then
 		assertThat(actual, is(expect));
 	}
@@ -102,9 +101,9 @@ public class ColumnParserTest {
 		String surplusString = targetLogline;
 		surplusString = surplusString.replace((String) regexParser.parse(surplusString, ipaddressPattern), "");
 		out.println( surplusString );
-		ColumnParser parser = regexParser;
-		UnaryOperator<String> mainProcessor = (String line) -> (String) parser.parse( line, userIDPattern );
-		String actual = (String) extractor.extract(surplusString, originalReturer, mainProcessor,(String line)-> line.replace( " ","" ));
+		RegexParser parser = regexParser;
+		UnaryOperator<String> mainProcessor = (String line) -> (String) parser.parse( line, regexPattern );
+		String actual = (String) extractor.extract(surplusString, noActionOperator, mainProcessor,(String line)-> line.replace( " ","" ));
 		out.println( actual );
 		// then
 		assertThat(actual, is(expect));
@@ -120,9 +119,9 @@ public class ColumnParserTest {
 
 		out.println(surplusString);
 		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line,bracketPattern )).replace( "[","" );
-		ColumnParser parser = fixedLengthParser;
+		RegexParser parser = fixedLengthParser;
 		UnaryOperator<String> mainProcessor = (String line) ->(String) parser.parse(line, regexPattern);
-		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor,originalReturer);
+		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor,noActionOperator);
 		// then
 		assertThat(actual, is(expect));
 	}
@@ -135,7 +134,7 @@ public class ColumnParserTest {
 		String expect = "10:16:44";
 		String surplusString = targetLogline;
 		out.println(surplusString);
-		ColumnParser parser = regexParser;
+		RegexParser parser = regexParser;
 		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line,bracketPattern ));
 		UnaryOperator<String> mainProcessor = (String line) ->(String) parser.parse(line, regexPattern);
 		int beginIgnoreOffset = 1;
@@ -159,7 +158,7 @@ public class ColumnParserTest {
 		String expect = "GET";
 		String surplusString = targetLogline;
 
-		ColumnParser parser = regexParser;
+		RegexParser parser = regexParser;
 		//전처리
 		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line, quotationPattern));
 		//본작업
@@ -169,7 +168,7 @@ public class ColumnParserTest {
 		int endIgnoreOffset=1;
 		UnaryOperator<String> postProcessor = (String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 		// when
-		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor,postProcessor);
+		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor, postProcessor);
 		// then
 		assertThat(actual, is(expect));
 	}
@@ -182,7 +181,7 @@ public class ColumnParserTest {
 		Object regexPattern = spacePattern;
 		String expect = "/apache_pb.gif";
 		String surplusString = targetLogline;
-		ColumnParser parser = regexParser;
+		RegexParser parser = regexParser;
 		//전처리
 		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line, quotationPattern));
 		//본작업
@@ -192,7 +191,7 @@ public class ColumnParserTest {
 		int endIgnoreOffset=1;
 		UnaryOperator<String> postProcessor = (String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 		// when
-		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor,postProcessor);
+		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor, postProcessor);
 		// then
 		assertThat(actual, is(expect));
 	}
@@ -204,7 +203,7 @@ public class ColumnParserTest {
 		Object regexPattern = leftSpaceRightQuotatoinPattern;
 		String expect = "HTTP/1.0";
 		String surplusString = targetLogline;
-		ColumnParser parser = regexParser;
+		RegexParser parser = regexParser;
 		//전처리
 		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line, quotationPattern));
 		//본작업
@@ -224,9 +223,9 @@ public class ColumnParserTest {
 		Object regexPattern = leftQutationSpaceRightSpacePattern;
 		String expect = "200";
 		String surplusString = targetLogline;
-		ColumnParser parser = regexParser;
+		RegexParser parser = regexParser;
 		//전처리
-		UnaryOperator<String> preProcessor = originalReturer;
+		UnaryOperator<String> preProcessor = noActionOperator;
 //		UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse( line, quotationPattern));
 		//본작업
 		UnaryOperator<String> mainProcessor = (String line) ->(String) parser.parse(line, regexPattern);
@@ -242,12 +241,23 @@ public class ColumnParserTest {
 
 	@Test
 	public void matchResponseSizeExcludedHedersizeTest() throws Exception {
-		out.printf( "========= %sTest() START =========\n", "matchResponseSizeExcludedHedersizeT" );
+		out.printf( "========= %sTest() START =========\n", "matchResponseSizeExcludedHedersize" );
 		// given
-		Object expected = null;
+		Object regexPattern = spaceNumberPattern;
+		String expect = "2326";
+		String surplusString = targetLogline;
+		RegexParser parser = regexParser;
+		//전처리
+		UnaryOperator<String> preProcessor = noActionOperator;
+		//본작업
+		UnaryOperator<String> mainProcessor = (String line) ->(String) parser.parse(line, regexPattern);
+		//후처리
+		int beginIgnoreOffset = 5;
+		int endIgnoreOffset=1;
+		UnaryOperator<String> postProcessor =(String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 		// when
-		Object actual = null;
+		String actual = (String) extractor.extract(surplusString, preProcessor, mainProcessor,postProcessor);
 		// then
-		assertThat( actual, is( expected ) );
+		assertThat(actual, is(expect));
 	}
 }
