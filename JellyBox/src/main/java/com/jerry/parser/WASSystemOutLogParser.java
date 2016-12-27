@@ -24,7 +24,7 @@ public class WASSystemOutLogParser extends DefaultParser{
 		resultMap.put("content", extractContent(target));
 		return resultMap;
 	}
-	private final String LEVEL="([W|I|E].)";
+	private final String LEVEL="([W|I|E|A]{1})";
 	private final String LEVEL_PATTERN=SPACE+LEVEL+SPACE;
 	private final String EXCLUDELINE_PATTERN=BRACKET_PATTERN+ANY+LEVEL_PATTERN;
 	private Object extractContent(String target) {
@@ -62,17 +62,17 @@ public class WASSystemOutLogParser extends DefaultParser{
 		UnaryOperator<String> postProcessor = (String line)-> line.replace("] ", "");;
 		return STRING_EXTRACTOR.extract(target, preProcessor, mainProcessor, postProcessor);
 	}
-	private static final String WASSYSTEMOUTLOG_TIMESTAMP_PATTERN="([0-9]{2}):([0-9]{2}):([0-9]{2}):([0-9]{3})";
+	private static final String WASSYSTEMOUTLOG_TIMESTAMP_PATTERN="([0-9]{1}|[0-9]{2}):([0-9]{2}):([0-9]{2}):([0-9]{3})";
 	private Object extractTime(String target) {
 		UnaryOperator<String> preProcessor = (String line) -> ((String) REGEX_PARSER.parse(line, BRACKET_PATTERN)).replace("[", "");
 		UnaryOperator<String> mainProcessor = (String line) -> ((String) REGEX_PARSER.parse(line, WASSYSTEMOUTLOG_TIMESTAMP_PATTERN));
 		UnaryOperator<String> postProcessor = NO_ACTION_OPERATOR;
 		return STRING_EXTRACTOR.extract(target, preProcessor, mainProcessor, postProcessor);
 	}
-	private int WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN=10;
+	private String WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN="(([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2}) )";
 	private Object extractDate(String target) {
 		UnaryOperator<String> preProcessor = (String line) -> ((String) REGEX_PARSER.parse(line, BRACKET_PATTERN)).replace("[", "");
-		UnaryOperator<String> mainProcessor = (String line) ->(String) FIXED_LENGTH_PARSER.parse(line, WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN);
+		UnaryOperator<String> mainProcessor = (String line) ->(String) REGEX_PARSER.parse(line, WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN);
 		UnaryOperator<String> postProcessor = REMOVE_SPACECHAR_OPERATOR;
 		return STRING_EXTRACTOR.extract(target, preProcessor, mainProcessor, postProcessor);
 	}
