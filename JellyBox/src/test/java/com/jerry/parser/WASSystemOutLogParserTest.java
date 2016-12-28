@@ -17,31 +17,30 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.jerry.parser.function.RegexParseOperator;
+import com.jerry.parser.function.StringExtractor;
+import com.jerry.util.function.StringParser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.jerry.pattern.RegexParser;
-import com.jerry.pattern.StringExtractor;
 
 public class WASSystemOutLogParserTest {
 	private String logLine,logLine2,logLine3;
 	private String logLine4;
 	private String logLine5;
 	private String testFilePath;
-	RegexParser regexParser,fixedLengthParser;
-	StringExtractor extractor;
-	UnaryOperator<String> noActionOperator,removeSpaceChar;
-	private String expectResultFilePath;
-	private String actulResultFilePath;
+	private RegexParseOperator regexParseOperator;
+	private StringExtractor extractor;
+	private UnaryOperator<String> noActionOperator,removeSpaceChar;
 	private String testFilePath2;
 
+	private StringParser parser;
+	//2s 912ms
 	@Before
 	public void setUp() throws Exception {
 		testFilePath= System.getProperty("user.dir")+"/testResource/SystemOut.log";
 		testFilePath2= System.getProperty("user.dir")+"/testResource/MES2.App02_SystemOut.log";
-		expectResultFilePath=System.getProperty("user.dir")+"/testResource/expected.result";
-		actulResultFilePath=System.getProperty("user.dir")+"/testResource/actual.result";
+		parser = new WASSystemOutLogParser( testFilePath2 );
 		{
 			logLine="[16. 12. 5   15:26:42:279 KST] 00000113 DataSourceCon E   DSRA8040I: Failed to connect to the DataSource \"\".  Encountered java.sql.SQLException: IO 오류: The Network Adapter could not establish the connection DSRA0010E: SQL 상태 = 08006, 오류 코드 = 17,002";
 			logLine2="	at oracle.jdbc.driver.T4CConnection.logon(T4CConnection.java:673)";
@@ -55,7 +54,7 @@ public class WASSystemOutLogParserTest {
 			removeSpaceChar = (String line) -> line.replace(" ",""); 
 		}
 		{
-			regexParser= (String line, Object columnRegex) -> {
+			regexParseOperator = (String line, Object columnRegex) -> {
 				Pattern pattern = Pattern.compile((String) columnRegex);
 				Matcher matcher = pattern.matcher(line);
 				String result;
@@ -67,17 +66,6 @@ public class WASSystemOutLogParserTest {
 					result = "null";
 				}
 //				out.printf("line [%s] regex [%s] result [%s]\n",line,columnRegex,result);
-				return result;
-			};
-			fixedLengthParser = (String line, Object length) -> {
-				String result;
-				int beginOffset = 0;
-				int endOffset = beginOffset + (Integer) length;
-				if (endOffset < 1) {
-					result = "null";
-				}
-				result = line.substring(beginOffset, endOffset);
-				out.printf("line [%s] regex [%s] result [%s]\n",line,length,result);
 				return result;
 			};
 		}
@@ -93,10 +81,9 @@ public class WASSystemOutLogParserTest {
 		// given
 		String target=logLine;
 		Object expected = getParsedLogLineMap(target);
-		WASSystemOutLogParser  parser= new WASSystemOutLogParser(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parse();
+		Object actual = parser.parseString( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -107,10 +94,9 @@ public class WASSystemOutLogParserTest {
 		// given
 		String target=logLine3;
 		Object expected = getParsedLogLineMap(target);
-		WASSystemOutLogParser  parser= new WASSystemOutLogParser(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parse();
+		Object actual = parser.parseString( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -121,10 +107,9 @@ public class WASSystemOutLogParserTest {
 		// given
 		String target=logLine4;
 		Object expected = getParsedLogLineMap(target);
-		WASSystemOutLogParser  parser= new WASSystemOutLogParser(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parse();
+		Object actual = parser.parseString( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -135,41 +120,39 @@ public class WASSystemOutLogParserTest {
 		// given
 		String target = logLine5;
 		Object expected = getParsedLogLineMap( target );
-		WASSystemOutLogParser parser = new WASSystemOutLogParser( target );
 		out.println( expected );
 		// when
-		Object actual = parser.parse();
+		Object actual = parser.parseString( target );
 
 		// then
 		assertThat( actual, is( expected ) );
 	}
-		private String bracketPattern = "\\[(.*?)\\]";
+	private String bracketPattern = "\\[(.*?)\\]";
 
 	private String leftBracketSpaceRightSpacePattern = "\\] (.*?) ";
 	private String processComponentPattern = leftBracketSpaceRightSpacePattern+"(.*?) ";
 	private String logLevelPattern = " ([W|I|E|A]{1}) ";
-	private String codePattern = "([A-Z]{4}|[A-Z]{5})([0-9]{4}|[0-9]{5})([W|I|E|A]{1})";
 	private String logHeaderPattern =bracketPattern+"(.*?)"+logLevelPattern;
 	private Object getParsedLogLineMap(String logLine) {
 		Map<String, String> logLineMap = new HashMap<>();
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			String datePattern = "(([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2}) )";
-			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse(line, bracketPattern)).replace("[", "");
+			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse(line, bracketPattern)).replace("[", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, datePattern);
 			UnaryOperator<String> postProcessor =removeSpaceChar;
 			logLineMap.put("date", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			String timestampPattern="([0-9]{1}|[0-9]{2}):([0-9]{2}):([0-9]{2}):([0-9]{3})";
-			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse(line, bracketPattern)).replace("[", "");
+			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse(line, bracketPattern)).replace("[", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, timestampPattern);
 			UnaryOperator<String> postProcessor =noActionOperator;
 			logLineMap.put("time", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			String pattern=leftBracketSpaceRightSpacePattern;
 			UnaryOperator<String> preProcessor = noActionOperator;
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, pattern);
@@ -177,15 +160,15 @@ public class WASSystemOutLogParserTest {
 			logLineMap.put("threadName", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			String pattern=" (.*?) ";
-			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParser.parse(line, processComponentPattern)).replace("] ", "");
+			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse(line, processComponentPattern)).replace("] ", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, pattern);
 			UnaryOperator<String> postProcessor =removeSpaceChar;
 			logLineMap.put("processComponent", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			String pattern=logLevelPattern;
 			UnaryOperator<String> preProcessor = noActionOperator;
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, pattern);
@@ -193,19 +176,27 @@ public class WASSystemOutLogParserTest {
 			logLineMap.put("level", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
-			String pattern=codePattern;
+			RegexParseOperator parser = regexParseOperator;
+			String pattern= "([A-Z]{4}|[A-Z]{5})([0-9]{4}|[0-9]{5})([W|I|E|A]{1})";
 			UnaryOperator<String> preProcessor = noActionOperator;
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, pattern);
 			UnaryOperator<String> postProcessor =(String line)->line.replace(":", "");
 			logLineMap.put("code", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
 		}
 		{
-			RegexParser parser = regexParser;
+			RegexParseOperator parser = regexParseOperator;
 			UnaryOperator<String> preProcessor = noActionOperator;
 			UnaryOperator<String> mainProcessor =(String line) -> line.replace((String) parser.parse(line,logHeaderPattern), "");
 			UnaryOperator<String> postProcessor =noActionOperator;
 			logLineMap.put("content", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
+		}
+		{
+	String serverNamePattern =  "([A-Z0-9]+)\\.(.*?)_";
+			RegexParseOperator parser = regexParseOperator;
+			UnaryOperator<String> preProcessor = noActionOperator;
+			UnaryOperator<String> mainProcessor =(String line) -> (String) parser.parse(line,serverNamePattern);
+			UnaryOperator<String> postProcessor = (String line )-> line.replace( "_","" );
+			logLineMap.put("serverName", extractor.extract(testFilePath2,preProcessor,mainProcessor,postProcessor));
 		}
 		return logLineMap;
 	}
@@ -216,45 +207,22 @@ public class WASSystemOutLogParserTest {
 		String filePath=testFilePath;
 		List<String> lines =getDummyDatas(filePath,(String line)-> line.regionMatches( 0,"[",0,1 ) );
 //		System.out.println(lines);
-		Object expected = null;
+		Object expected;
 		System.out.println("================= given =================");
 		{
-			List<Object> parsedLines = new LinkedList<>();
-			Object parsedLine;
-			Iterator<String> iterator = lines.iterator();
-			while (iterator.hasNext()) {
-				String line = iterator.next();
-				parsedLine =getParsedLogLineMap(line);
-				parsedLines.add(parsedLine);
-				out.println( parsedLine );
-			}
-			expected=parsedLines;
+			expected=lines.parallelStream().map( this::getParsedLogLineMap ).collect( Collectors.toList() );
 		}
-		writeFile(expectResultFilePath,expected);
 		System.out.println("================= when =================");
 		// when
-		Object actual = null;
+		Object actual=null;
 		try(Stream<String> lineStream = Files.lines(Paths.get(filePath), Charset.defaultCharset())){
-			List<Object> actualParsedLines = lineStream.parallel().filter( (String line)-> line.regionMatches( 0,"[",0,1 )  ).map(WASSystemOutLogParser::new).map(WASSystemOutLogParser::parse).peek( out::println ).collect(Collectors.toList());
-			actual = actualParsedLines;
+			actual = lineStream.filter( (String line)-> line.regionMatches( 0,"[",0,1 )  ).map( parser::parseString ).peek( out::println ).collect( Collectors.toList() );
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
-		writeFile(actulResultFilePath,actual);
 
 		// then
 		assertThat( actual, is( expected ) );
-	}
-
-	private void writeFile(String filePath, Object contents) {
-		List<Map<String, Object>> targetList = ((List<Map<String,Object>>) contents);
-		try(PrintWriter pw = new PrintWriter(Files.newBufferedWriter(
-				Paths.get(filePath))))
-		{
-			targetList.stream().forEach( pw::println );
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private List<String> getDummyDatas(String testFilePath,Predicate<String> predicate) {
@@ -263,6 +231,7 @@ public class WASSystemOutLogParserTest {
 			result = lines.parallel().filter( predicate ).collect( Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
+
 		}
 		return result;
 	}
@@ -272,32 +241,19 @@ public class WASSystemOutLogParserTest {
 		// given
 		String filePath=testFilePath2;
 		List<String> lines =getDummyDatas(filePath,(String line)-> line.regionMatches( 0,"/",0,1 ) );
-		Object expected = null;
+		Object expected;
 		System.out.println("================= given =================");
 		{
-			List<Object> parsedLines = new LinkedList<>();
-			Object parsedLine;
-			Iterator<String> iterator = lines.iterator();
-			while (iterator.hasNext()) {
-				String line = iterator.next();
-				parsedLine =getParsedLogLineMap(line);
-				parsedLines.add(parsedLine);
-				out.println( parsedLine );
-			}
-			expected=parsedLines;
+			expected=lines.parallelStream().map( this::getParsedLogLineMap ).collect( Collectors.toList() );
 		}
-		writeFile(expectResultFilePath,expected);
 		System.out.println("================= when =================");
 		// when
 		Object actual = null;
 		try(Stream<String> lineStream = Files.lines(Paths.get(filePath), Charset.defaultCharset())){
-			List<Object> actualParsedLines = lineStream.parallel().filter( (String line)-> line.regionMatches( 0,"/",0,1 )  ).map(WASSystemOutLogParser::new).map(WASSystemOutLogParser::parse).peek( out::println ).collect(Collectors.toList());
-			actual = actualParsedLines;
+			actual = lineStream.parallel().filter( (String line)-> line.regionMatches( 0,"/",0,1 )  ).map( parser::parseString ).peek( out::println ).collect( Collectors.toList() );
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
-		writeFile(actulResultFilePath,actual);
-
 		// then
 		assertThat( actual, is( expected ) );
 	}
