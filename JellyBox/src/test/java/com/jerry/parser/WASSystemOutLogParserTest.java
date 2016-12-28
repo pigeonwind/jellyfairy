@@ -10,11 +10,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -214,7 +214,7 @@ public class WASSystemOutLogParserTest {
 		out.printf( "========= %sTest() START =========\n", "multiLineParse" );
 		// given
 		String filePath=testFilePath;
-		List<String> lines =getDummyDatas(filePath);
+		List<String> lines =getDummyDatas(filePath,(String line)-> line.regionMatches( 0,"[",0,1 ) );
 //		System.out.println(lines);
 		Object expected = null;
 		System.out.println("================= given =================");
@@ -247,7 +247,7 @@ public class WASSystemOutLogParserTest {
 	}
 
 	private void writeFile(String filePath, Object contents) {
-		List<Map> targetList = (List<Map>) contents;
+		List<Map<String, Object>> targetList = ((List<Map<String,Object>>) contents);
 		try(PrintWriter pw = new PrintWriter(Files.newBufferedWriter(
 				Paths.get(filePath))))
 		{
@@ -257,10 +257,10 @@ public class WASSystemOutLogParserTest {
 		}
 	}
 
-	private List<String> getDummyDatas(String testFilePath) {
+	private List<String> getDummyDatas(String testFilePath,Predicate<String> predicate) {
 		List<String> result=new LinkedList<>();
 		try(Stream<String> lines = Files.lines( Paths.get(testFilePath), Charset.defaultCharset())){
-			result = lines.parallel().filter( (String line)-> line.regionMatches( 0,"[",0,1 )  ).collect( Collectors.toList());
+			result = lines.parallel().filter( predicate ).collect( Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -271,7 +271,7 @@ public class WASSystemOutLogParserTest {
 		out.printf( "========= %sTest() START =========\n", "multiLineParse2" );
 		// given
 		String filePath=testFilePath2;
-		List<String> lines =getDummyDatas(filePath);
+		List<String> lines =getDummyDatas(filePath,(String line)-> line.regionMatches( 0,"/",0,1 ) );
 		Object expected = null;
 		System.out.println("================= given =================");
 		{

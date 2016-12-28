@@ -76,5 +76,4 @@ public class WASSystemOutLogParser extends DefaultParser{
 		UnaryOperator<String> postProcessor = REMOVE_SPACECHAR_OPERATOR;
 		return STRING_EXTRACTOR.extract(target, preProcessor, mainProcessor, postProcessor);
 	}
-	
 }
