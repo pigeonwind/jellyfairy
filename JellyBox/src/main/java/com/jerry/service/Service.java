@@ -1,5 +1,7 @@
 package com.jerry.service;
 
+import java.util.Map;
+
 public interface Service {
-	public Object call(Object requestObject);
+	public Object call(Map<?, ?> requestObject);
 }

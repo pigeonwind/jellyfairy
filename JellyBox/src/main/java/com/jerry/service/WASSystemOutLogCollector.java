@@ -19,10 +19,9 @@ public class WASSystemOutLogCollector implements Service {
     static final String WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILENAME="fileName";
     static final String WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILTER="filter";
     @Override
-    public Object call(Object requestObject) {
-        Map<String,Object> requestParms = (Map<String, Object>) requestObject;
-        String fileName = (String) requestParms.get( WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILENAME );
-        Predicate<String> filter = (Predicate<String>) requestParms.get( WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILTER);
+    public Object call(Map<?, ?> requestObject) {
+        String fileName = (String) requestObject.get( WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILENAME );
+        Predicate<String> filter = ((Predicate<String>) requestObject.get( WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILTER));
 
         StringParser parser =new WASSystemOutLogParser( fileName );
 

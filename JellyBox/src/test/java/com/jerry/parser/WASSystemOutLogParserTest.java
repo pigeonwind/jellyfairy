@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -134,14 +137,16 @@ public class WASSystemOutLogParserTest {
 	private String logLevelPattern = " ([W|I|E|A]{1}) ";
 	private String logHeaderPattern =bracketPattern+"(.*?)"+logLevelPattern;
 	private Object getParsedLogLineMap(String logLine) {
-		Map<String, String> logLineMap = new HashMap<>();
+		Map<String, Object> logLineMap = new HashMap<>();
 		{
 			RegexParseOperator parser = regexParseOperator;
 			String datePattern = "(([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2}) )";
 			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse(line, bracketPattern)).replace("[", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, datePattern);
 			UnaryOperator<String> postProcessor =removeSpaceChar;
-			logLineMap.put("date", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
+			String dateString = extractor.extract(logLine,preProcessor,mainProcessor,postProcessor);
+			
+			logLineMap.put("date", LocalDate.parse(dateString,DateTimeFormatter.ofPattern( dateString.contains( "/" )?"MM/dd/yy":"yy.MM.d" )));
 		}
 		{
 			RegexParseOperator parser = regexParseOperator;
@@ -149,7 +154,9 @@ public class WASSystemOutLogParserTest {
 			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse(line, bracketPattern)).replace("[", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) parser.parse(line, timestampPattern);
 			UnaryOperator<String> postProcessor =noActionOperator;
-			logLineMap.put("time", extractor.extract(logLine,preProcessor,mainProcessor,postProcessor));
+			String timeString =extractor.extract(logLine,preProcessor,mainProcessor,postProcessor);
+			
+			logLineMap.put("time",LocalTime.parse(timeString, DateTimeFormatter.ofPattern( "H:mm:ss:SSS" )) );
 		}
 		{
 			RegexParseOperator parser = regexParseOperator;
@@ -257,5 +264,4 @@ public class WASSystemOutLogParserTest {
 		// then
 		assertThat( actual, is( expected ) );
 	}
-
 }

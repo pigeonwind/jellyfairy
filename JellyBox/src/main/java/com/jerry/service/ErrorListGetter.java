@@ -15,8 +15,8 @@ public class ErrorListGetter implements  Service{
     public static final String REQUEST_PARAM_END_DATE = "endDate";
 
     @Override
-    public Object call(Object requestObject) {
-        List<Map<String,Object>> list = (List<Map<String, Object>>) ((Map<String,Object>)requestObject).get( REQUEST_PARAM_WAS_SYSTEM_OUT_LOG_COLLECTED_RESULT );
+    public Object call(Map<?, ?> requestObject) {
+        List<Map<String,Object>> list = (List<Map<String, Object>>) requestObject.get( REQUEST_PARAM_WAS_SYSTEM_OUT_LOG_COLLECTED_RESULT );
         Predicate<Map<String,Object>> dateFilter =null;
 
         return list.stream().parallel().filter( dateFilter ).map( (Map map)-> map.get( "code" ) ).distinct().collect( Collectors.toList() );

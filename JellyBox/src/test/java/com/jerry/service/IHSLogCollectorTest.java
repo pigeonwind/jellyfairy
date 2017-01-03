@@ -6,10 +6,18 @@ import static org.hamcrest.CoreMatchers.*;
 
 import org.junit.*;
 
+import com.jerry.parser.IHSLogDataParser;
+import com.jerry.util.function.StringParser;
+
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by jerryDev on 2017. 1. 2..
@@ -21,7 +29,7 @@ public class IHSLogCollectorTest {
 
     @Before
     public void setUp() throws Exception {
-        fileName="MES2.App02_SystemOut.log";
+        fileName="access-SEC-test.log";
         filePath=System.getProperty("user.dir")+"/testResource/"+fileName;
     }
 
@@ -34,18 +42,19 @@ public class IHSLogCollectorTest {
     public void callServiceTest() throws Exception {
         out.printf( "========= %sTest() START =========\n", "callService" );
         Service errorListService = new ErrorListGetter();
-        Predicate<String> lineFilterAtFirstCharIsSlash= (String line)->line.regionMatches( 0,"",0,1 );
 
         Map<String,Object> requestParmameterMap = new HashMap<>(  );
         {
-            requestParmameterMap.put( WASSystemOutLogCollector.WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILENAME, filePath );
-            requestParmameterMap.put( WASSystemOutLogCollector.WAS_SYSTEM_OUT_LOG_COLLECTOR_REQUEST_PARAM_FILTER, lineFilterAtFirstCharIsSlash );
+            requestParmameterMap.put( FileLogCollector.FILE_LOG_COLLECTOR_REQUEST_PARAM_FILENAME, filePath );
         }
 
         // given
         Object expected = null;
         {
-
+        	StringParser parser = new IHSLogDataParser(fileName);
+        	try(Stream<String> lineStream = Files.lines( Paths.get(filePath), Charset.defaultCharset())){
+        		expected = lineStream.parallel().map(parser::parseString).peek(System.out::println).collect( Collectors.toList());
+        	}
         }
 
         // when
