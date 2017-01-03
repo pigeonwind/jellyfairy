@@ -26,7 +26,7 @@ public class FileLogCollector implements Service{
     	
         String fileName = (String) requestObject.get( FILE_LOG_COLLECTOR_REQUEST_PARAM_FILENAME );
         String parserName = (String) requestObject.get( FILE_LOG_COLLECTOR_REQUEST_PARAM_PARSERNAME );
-        Predicate<String> filter =  (Predicate<String>) requestObject.get( FILE_LOG_COLLECTOR_REQUEST_PARAM_FILENAME)wodu);
+        Predicate<String> filter =  (Predicate<String>) requestObject.get( FILE_LOG_COLLECTOR_REQUEST_PARAM_FILENAME);
         
         Object result=null;
 
