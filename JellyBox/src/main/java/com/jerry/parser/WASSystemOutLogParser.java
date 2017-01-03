@@ -1,5 +1,7 @@
 package com.jerry.parser;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.function.UnaryOperator;
 
@@ -65,14 +67,17 @@ public class WASSystemOutLogParser extends DefaultParser{
 	}
 	private static final String WASSYSTEMOUTLOG_TIMESTAMP_PATTERN="([0-9]{1}|[0-9]{2}):([0-9]{2}):([0-9]{2}):([0-9]{3})";
 	private Object extractTime(String target) {
-		return STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
+		String timeString = STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
 				(String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_TIMESTAMP_PATTERN)),
 				NO_ACTION_OPERATOR );
+
+		return LocalDate.parse(timeString, DateTimeFormatter.ofPattern( "HH:mm:ss:SSS" ));
 	}
 	private String WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN="(([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2}) )";
 	private Object extractDate(String target) {
-		return STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
+		String dateTime= STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
 				(String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN),
 				REMOVE_SPACECHAR_OPERATOR);
+		return LocalDate.parse( dateTime, DateTimeFormatter.ofPattern( dateTime.contains( "/" )?"MM/dd/yy":"yy.MM.dd" ) );
 	}
 }
