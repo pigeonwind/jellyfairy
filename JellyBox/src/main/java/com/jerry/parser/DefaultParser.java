@@ -14,8 +14,10 @@ abstract public class DefaultParser implements StringParser {
 	static final String RIGHTBRACKET="\\]";
 	static final String SPACE=" ";
 	static final String ANY="(.*?)";
+	static final String PTTERN_END="$";
 	static final String QUOTATION="\"";
 	static final String COLLON=":";
+	static final String SLASH="/";
 	static final String UNDERBAR = "_";
 	static final String DASH="-";
 	static final String DOT="\\.";

@@ -44,7 +44,6 @@ public class IHSLogDataParserTest {
 		leftQuotationPattern ="\"(.*?) ";
 		spacePattern = " (.*?) ";
 		leftQutationSpaceRightSpacePattern ="\" (.*?) ";
-
 		
 		// parser setting
 		{
@@ -124,12 +123,15 @@ public class IHSLogDataParserTest {
 			UnaryOperator<String> postProcessor = (String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 			ihsLogLineMap.put("requestMethod", extractor.extract(logLine, preProcessor, mainProcessor, postProcessor));
 		}
+		// requestLine
+		Function<String, String>  requestLineFunction;
 		{
-			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse( line, quotationPattern));
+			UnaryOperator<String> preProcessor = (String line) -> (String) regexParseOperator.parse( line, quotationPattern);
 			UnaryOperator<String> mainProcessor = (String line) ->(String) regexParseOperator.parse(line, spacePattern);
 			int beginIgnoreOffset = 1;
 			int endIgnoreOffset=1;
-			UnaryOperator<String> postProcessor = (String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
+			UnaryOperator<String> postProcessor = (String line) ->{String result = line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);return result;};
+			requestLineFunction =  preProcessor.andThen(mainProcessor).andThen(postProcessor);
 			ihsLogLineMap.put("requestLine", extractor.extract(logLine, preProcessor, mainProcessor, postProcessor));
 		}
 		{
@@ -140,12 +142,29 @@ public class IHSLogDataParserTest {
 			UnaryOperator<String> postProcessor =(String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 			ihsLogLineMap.put("status", extractor.extract(logLine, preProcessor, mainProcessor,postProcessor));
 		}
+		// category
 		{
 			String dashPattern ="-(.*?)-";
-			UnaryOperator<String> preProcessor = noActionOperator;
 			UnaryOperator<String> mainProcessor = (String line) ->(String) regexParseOperator.parse(line, dashPattern);
-			UnaryOperator<String> postProcessor =(String line) -> line.replace( "-","" );
-			ihsLogLineMap.put("category", extractor.extract(testFilePath, preProcessor, mainProcessor,postProcessor));
+			UnaryOperator<String> postProcessor =(String line) -> line.replace("-","" );
+			String category = extractor.extract(testFilePath, noActionOperator, mainProcessor,postProcessor);
+			ihsLogLineMap.put("category", category);
+		}
+		// Module 
+		{
+			String slashPattern ="/(.*?)/";
+			UnaryOperator<String> preProcessor = (String line)-> requestLineFunction.apply(line);
+			UnaryOperator<String> mainProcessor = (String line) ->(String) regexParseOperator.parse(line, slashPattern);
+			UnaryOperator<String> postProcessor =(String line) ->line.replaceAll("/","");
+			ihsLogLineMap.put("module", extractor.extract(logLine, preProcessor, mainProcessor,postProcessor));
+		}
+		// Interface 
+		{
+			String interfacePattern ="sca/(.*?)$";
+			UnaryOperator<String> preProcessor = (String line)-> requestLineFunction.apply(line);
+			UnaryOperator<String> mainProcessor = (String line) ->(String) regexParseOperator.parse(line, interfacePattern);
+			UnaryOperator<String> postProcessor =(String line) ->line.replaceAll("sca/","");
+			ihsLogLineMap.put("interface", extractor.extract(logLine, preProcessor, mainProcessor,postProcessor));
 		}
 		return ihsLogLineMap;
 	}
@@ -166,7 +185,7 @@ public class IHSLogDataParserTest {
 		System.out.println("================= when =================");
 		Object actual;
 		try(Stream<String> lineStream = Files.lines(Paths.get(testFilePath), Charset.defaultCharset())){
-			actual =  lineStream.parallel().map(parser::parseString).peek( System.out::println).collect(Collectors.toList());
+			actual =  lineStream.parallel().map(parser::parseString).collect(Collectors.toList());
 		}
 		// then
 		assertThat(actual, is(expected));

@@ -2,6 +2,7 @@ package com.jerry.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -10,15 +11,15 @@ import java.util.stream.Collectors;
  */
 public class ErrorListGetter implements  Service{
 
-    public static final String REQUEST_PARAM_WAS_SYSTEM_OUT_LOG_COLLECTED_RESULT = "collectedResult";
-    public static final String REQUEST_PARAM_START_DATE = "startDate";
-    public static final String REQUEST_PARAM_END_DATE = "endDate";
+    public static final String REQUEST_PARAM_INPUT_LIST = "collectedResult";
+	public static final String REQUEST_PARAM_FILTER = "filter";
+	public static final String REQUEST_PARAM_MAPPER = "mapper";
 
     @Override
-    public Object call(Map<?, ?> requestObject) {
-        List<Map<String,Object>> list = (List<Map<String, Object>>) requestObject.get( REQUEST_PARAM_WAS_SYSTEM_OUT_LOG_COLLECTED_RESULT );
-        Predicate<Map<String,Object>> dateFilter =null;
-
-        return list.stream().parallel().filter( dateFilter ).map( (Map map)-> map.get( "code" ) ).distinct().collect( Collectors.toList() );
+    public Object call(Map<String, Object> requestObject) {
+        List<Map<String,Object>> list = (List<Map<String, Object>>) requestObject.get( REQUEST_PARAM_INPUT_LIST );
+        Predicate<Map<String,Object>> filter = (Predicate<Map<String, Object>>) requestObject.get(REQUEST_PARAM_FILTER);
+        Function<Map<String, Object>, Map<String, Object>> mapper = (Function<Map<String, Object>, Map<String, Object>>) requestObject.get(REQUEST_PARAM_MAPPER);
+        return list.stream().parallel().filter( filter ).map( mapper ).distinct().collect( Collectors.toList() );
     }
 }
