@@ -15,6 +15,7 @@ repositories {
     // Use 'jcenter' for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -25,4 +26,13 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java"]
+            includes = ["**/*.fxml"]
+        }
+    }
 }
