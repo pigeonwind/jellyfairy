@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="768.0" prefWidth="260.0" styleClass="background" stylesheets="@../theme/jmetro/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="COLLECT LOG">
+         <opaqueInsets>
+            <Insets left="100.0" />
+         </opaqueInsets></Label>
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="LIST UP IHS ERROR" />
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="LIST UP WAS ERROR" />
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="TRACE IHS ERROR AT WAS LOG" />
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="TRACE WAS LOG BY THREAD" />
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="REPORT IHS" />
+      <Label prefHeight="96.0" prefWidth="260.0" styleClass="item-title" text="REPORT WAS" />
+   </children>
+   <padding>
+      <Insets left="40.0" />
+   </padding>
+</VBox>
