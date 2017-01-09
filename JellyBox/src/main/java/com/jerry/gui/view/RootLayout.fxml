@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane prefHeight="768.0" prefWidth="1024.0" styleClass="background" stylesheets="@../theme/jmetro/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane prefHeight="768.0" prefWidth="1024.0" styleClass="background" stylesheets="@../theme/jmetro/DarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <MenuBar styleClass="item-title" BorderPane.alignment="CENTER">
         <menus>
