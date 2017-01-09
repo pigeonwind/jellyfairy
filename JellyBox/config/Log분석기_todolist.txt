@@ -9,7 +9,8 @@ access log 분석
 	> 패턴 컴파일 하기
 		<포맷 이름,값> 
 	> 로그 라인 한개를 컴파일한 패턴 별로 파싱하기 ( 라인 한개에당 맵 한개 생성됨 ), Function<String,Map<String,String>> 
-	
+
+
 		
 
 was log 분석
@@ -17,3 +18,8 @@ was log 분석
 
 
 
+IHS Plugin 분석
+    > xml parser 생성 ( xpath 사용 )
+    > 서버별 로그 디렉토리 설정
+    > IHS Plugin Viewer 개발
+    > collect log
