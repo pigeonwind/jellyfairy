@@ -28,7 +28,26 @@
       <VirtualHost Name="*:33019"/>
    </VirtualHostGroup>
    <ServerCluster CloneSeparatorChange="false" GetDWLMTable="false" IgnoreAffinityRequests="false" LoadBalance="Round Robin" Name="AOCls" PostBufferSize="0" PostSizeLimit="-1" RemoveSpecialHeaders="true" RetryInterval="60" ServerIOTimeoutRetry="-1">
-      <Server CloneID="1avq4l9u6" ConnectTimeout="5" ExtendedHandshake="false" LoadBalanceWeight="2" MaxConnections="-1" Name="AONode_AOCls.Apptarget" ServerIOTimeout="900" WaitForContinue="false">
+      <Server CloneID="1avq4l9u6" ConnectTimeout="5" ExtendedHandshake="false" LoadBalanceWeight="2" MaxConnections="-1" Name="AONode_AOCls.App01" ServerIOTimeout="900" WaitForContinue="false">
+         <Transport Hostname="127.0.0.1" Port="33019" Protocol="http"/>
+         <Transport Hostname="127.0.0.1" Port="33020" Protocol="https">
+            <Property Name="keyring" Value="c:\Program Files\IBM\WebSphere\Plugins\etc\plugin-key.kdb"/>
+            <Property Name="stashfile" Value="c:\Program Files\IBM\WebSphere\Plugins\etc\plugin-key.sth"/>
+         </Transport>
+      </Server>
+      <PrimaryServers>
+         <Server Name="AONode_AOCls.Apptarget"/>
+      </PrimaryServers>
+   </ServerCluster>
+   <ServerCluster CloneSeparatorChange="false" GetDWLMTable="false" IgnoreAffinityRequests="false" LoadBalance="Round Robin" Name="BOCls" PostBufferSize="0" PostSizeLimit="-1" RemoveSpecialHeaders="true" RetryInterval="60" ServerIOTimeoutRetry="-1">
+      <Server CloneID="1avq4l9u6" ConnectTimeout="5" ExtendedHandshake="false" LoadBalanceWeight="2" MaxConnections="-1" Name="BONode_AOCls.App01" ServerIOTimeout="900" WaitForContinue="false">
+         <Transport Hostname="127.0.0.1" Port="33019" Protocol="http"/>
+         <Transport Hostname="127.0.0.1" Port="33020" Protocol="https">
+            <Property Name="keyring" Value="c:\Program Files\IBM\WebSphere\Plugins\etc\plugin-key.kdb"/>
+            <Property Name="stashfile" Value="c:\Program Files\IBM\WebSphere\Plugins\etc\plugin-key.sth"/>
+         </Transport>
+      </Server>
+      <Server CloneID="1avq4l9u6" ConnectTimeout="5" ExtendedHandshake="false" LoadBalanceWeight="2" MaxConnections="-1" Name="BONode_AOCls.App02" ServerIOTimeout="900" WaitForContinue="false">
          <Transport Hostname="127.0.0.1" Port="33019" Protocol="http"/>
          <Transport Hostname="127.0.0.1" Port="33020" Protocol="https">
             <Property Name="keyring" Value="c:\Program Files\IBM\WebSphere\Plugins\etc\plugin-key.kdb"/>
@@ -101,7 +120,16 @@
       <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/BSpaceWidgetsBCM/*"/>
       <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/RemoteALWeb/*"/>
    </UriGroup>
+   <UriGroup Name="default_host_BOCls_URIs">
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/BSpaceWidgetsWPS/*"/>
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/rest/*"/>
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/rest/*.jsp"/>
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/rest/*.jsv"/>
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/rest/*.jsw"/>
+      <Uri AffinityCookie="JSESSIONID" AffinityURLIdentifier="jsessionid" Name="/testModule/*.jsp"/>
+   </UriGroup>   
    <Route ServerCluster="AOCls" UriGroup="default_host_AOCls_URIs" VirtualHostGroup="default_host"/>
+   <Route ServerCluster="BOCls" UriGroup="default_host_BOCls_URIs" VirtualHostGroup="default_host"/>
    <RequestMetrics armEnabled="false" loggingEnabled="false" rmEnabled="false" traceLevel="HOPS">
       <filters enable="false" type="URI">
          <filterValues enable="false" value="/snoop"/>
