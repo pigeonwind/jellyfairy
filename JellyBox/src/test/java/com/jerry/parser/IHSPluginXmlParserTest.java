@@ -4,6 +4,7 @@ import static java.lang.System.out;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import com.jerry.util.function.Parser;
 import org.junit.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -29,10 +30,12 @@ import java.util.stream.Collectors;
 public class IHSPluginXmlParserTest {
     private String ihsPluginFilePath;
     private List<String> serverList,clusterList;
-    private List<Map<String,String>> serverClusterMapList,uriGorupList,uriList;
+    private List<Map<String,String>> serverClusterMapList, clusterUriGroupList, uriGroupUriList;
+    private Parser parser;
     @Before
     public void setUp() throws Exception {
         ihsPluginFilePath = System.getProperty("user.dir")+"/testResource/"+"plugin-cfg-gerp.xml";
+        parser = ParserFactory.create( ParserFactory.PARSERNAME_IHS_PLUGIN,ihsPluginFilePath );
         initDummyData();
     }
 
@@ -130,7 +133,7 @@ public class IHSPluginXmlParserTest {
                 return reulst;
             };
             System.out.println("=========== uri group list ===========");
-            uriGorupList=clusterList.stream().map( mapFunction )
+            clusterUriGroupList =clusterList.stream().map( mapFunction )
                                             .peek( out::println )
                                             .collect( Collectors.toList() );
         }
@@ -147,7 +150,7 @@ public class IHSPluginXmlParserTest {
         		return result;
         	};
         	System.out.println("=========== uri list ===========");
-        	uriList=uriGorupList.stream().flatMap(map-> {
+        	uriGroupUriList = clusterUriGroupList.stream().flatMap( map-> {
         								String uriGrup = map.get("UriGroup");
         						  		return getUriListFunction.apply(uriGrup).stream().map(uri-> toMap.apply(uriGrup, uri));
         						  })
@@ -163,13 +166,20 @@ public class IHSPluginXmlParserTest {
     }
 
     @Test
-    public void getServerListTest() throws Exception {
-        out.printf( "========= %sTest() START =========\n", "xmlParsing_IhsWasMap_" );
+    public void parseTest() throws Exception {
+        out.printf( "========= %sTest() START =========\n", "parse" );
         // given
-        String moduleName ="testModule";
-        Object expected =null;
+        //String moduleName ="testModule";
+       //Object expected = uriGroupUriList.stream().filter(map->map.get("Uri").contains( moduleName )).map( map->map.get( "UriGroup" ) ).collect( Collectors.toList() );
+        Map<String,Object> resultMap = new HashMap<>(  );
+
+        resultMap.put( IHSPlugInFileParser.SERVER_CLUSTER_MAP_LIST,serverClusterMapList );
+        resultMap.put( IHSPlugInFileParser.CLUSTER_URIGROUP_MAP_LIST, clusterUriGroupList );
+        resultMap.put( IHSPlugInFileParser.URIGROUP_URI_MAP_LIST, uriGroupUriList );
+
+        Object expected =resultMap;
         // when
-        Object actual = null;
+        Object actual = parser.parse();
         // then
         assertThat( actual, is( expected ) );
     }

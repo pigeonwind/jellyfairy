@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,7 +21,7 @@ import java.util.stream.Stream;
 
 import com.jerry.parser.function.RegexParseOperator;
 import com.jerry.parser.function.StringExtractor;
-import com.jerry.util.function.StringParser;
+import com.jerry.util.function.Parser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +36,13 @@ public class WASSystemOutLogParserTest {
 	private UnaryOperator<String> noActionOperator,removeSpaceChar;
 	private String testFilePath2;
 
-	private StringParser parser;
+	private Parser parser;
 	//2s 912ms
 	@Before
 	public void setUp() throws Exception {
 		testFilePath= System.getProperty("user.dir")+"/testResource/SystemOut.log";
 		testFilePath2= System.getProperty("user.dir")+"/testResource/MES2.App02_SystemOut.log";
-		parser = new WASSystemOutLogParser( testFilePath2 );
+		parser = new WASSystemOutLogLineParser( testFilePath2 );
 		{
 			logLine="[16. 12. 5   15:26:42:279 KST] 00000113 DataSourceCon E   DSRA8040I: Failed to connect to the DataSource \"\".  Encountered java.sql.SQLException: IO 오류: The Network Adapter could not establish the connection DSRA0010E: SQL 상태 = 08006, 오류 코드 = 17,002";
 			logLine2="	at oracle.jdbc.driver.T4CConnection.logon(T4CConnection.java:673)";
@@ -86,7 +85,7 @@ public class WASSystemOutLogParserTest {
 		Object expected = getParsedLogLineMap(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parseString( target );
+		Object actual = parser.parse( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -99,7 +98,7 @@ public class WASSystemOutLogParserTest {
 		Object expected = getParsedLogLineMap(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parseString( target );
+		Object actual = parser.parse( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -112,7 +111,7 @@ public class WASSystemOutLogParserTest {
 		Object expected = getParsedLogLineMap(target);
 		out.println( expected );
 		// when
-		Object actual = parser.parseString( target );
+		Object actual = parser.parse( target );
 
 		// then
 		assertThat(actual, is(expected));
@@ -125,7 +124,7 @@ public class WASSystemOutLogParserTest {
 		Object expected = getParsedLogLineMap( target );
 		out.println( expected );
 		// when
-		Object actual = parser.parseString( target );
+		Object actual = parser.parse( target );
 
 		// then
 		assertThat( actual, is( expected ) );
@@ -223,7 +222,7 @@ public class WASSystemOutLogParserTest {
 		// when
 		Object actual=null;
 		try(Stream<String> lineStream = Files.lines(Paths.get(filePath), Charset.defaultCharset())){
-			actual = lineStream.filter( (String line)-> line.regionMatches( 0,"[",0,1 )  ).map( parser::parseString ).peek( out::println ).collect( Collectors.toList() );
+			actual = lineStream.filter( (String line)-> line.regionMatches( 0,"[",0,1 )  ).map( parser::parse ).peek( out::println ).collect( Collectors.toList() );
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -257,7 +256,7 @@ public class WASSystemOutLogParserTest {
 		// when
 		Object actual = null;
 		try(Stream<String> lineStream = Files.lines(Paths.get(filePath), Charset.defaultCharset())){
-			actual = lineStream.parallel().filter( (String line)-> line.regionMatches( 0,"/",0,1 )  ).map( parser::parseString ).peek( out::println ).collect( Collectors.toList() );
+			actual = lineStream.parallel().filter( (String line)-> line.regionMatches( 0,"/",0,1 )  ).map( parser::parse ).peek( out::println ).collect( Collectors.toList() );
 		}catch (IOException e) {
 			e.printStackTrace();
 		}

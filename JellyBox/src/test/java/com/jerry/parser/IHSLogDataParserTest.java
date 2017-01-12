@@ -30,11 +30,11 @@ public class IHSLogDataParserTest {
 	private String spacePattern;
 	private String leftQutationSpaceRightSpacePattern;
 	private String testFilePath;
-	private StringParser parser;
+	private Parser parser;
 	@Before
 	public void setUp() throws Exception {
 		testFilePath= System.getProperty("user.dir")+"/testResource/access-SEC-test2.log";
-		parser = ParserFactory.create("IHS", testFilePath);
+		parser = ParserFactory.create(ParserFactory.PARSERNAME_IHS_LOG, testFilePath);
 		logLine = "/logs/ihs/access-SEC_log.20161006:127.0.0.1 - - [06/Oct/2016:14:32:55 +0900] \"GET /SEC01ModWeb/sca/LAY020278WS HTTP/1.1\" 404 244 0";
 		extractor = (String targetLine, UnaryOperator<String> preProcessor,	UnaryOperator<String> mainProcessor, UnaryOperator<String> postProcessor) -> (String) preProcessor.andThen(mainProcessor).andThen(postProcessor).apply(targetLine);
 		noActionOperator = (String line) -> line;
@@ -82,7 +82,7 @@ public class IHSLogDataParserTest {
 		// given
 		Object expected = getParsedLogLineMap(logLine);
 		// when
-		Object actual = parser.parseString( logLine );
+		Object actual = parser.parse( logLine );
 		// then
 		assertThat(actual, is(expected));
 	}
@@ -103,7 +103,7 @@ public class IHSLogDataParserTest {
 			
 			String dateString = extractor.extract(logLine, preProcessor, mainProcessor, noActionOperator);
 			ihsLogLineMap.put("requestCompleteDate",
-					LocalDate.parse(dateString, DateTimeFormatter.ofPattern(IHSLogDataParser.IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_DATE_FORMATTER_PATTERN,Locale.US)));
+					LocalDate.parse(dateString, DateTimeFormatter.ofPattern( IHSLogDataLineParser.IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_DATE_FORMATTER_PATTERN,Locale.US)));
 		}
 		{
 			Object regexPattern = leftCollonRightSpacePattern;
@@ -113,7 +113,7 @@ public class IHSLogDataParserTest {
 			int endIgnoreOffset=1;
 			UnaryOperator<String> postProcessor = (String line) ->line.substring(beginIgnoreOffset,line.length()-endIgnoreOffset);
 			String timeString = extractor.extract(logLine, preProcessor, mainProcessor, postProcessor);
-			ihsLogLineMap.put("requestCompleteTime",LocalTime.parse(timeString,DateTimeFormatter.ofPattern(IHSLogDataParser.IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_TIME_FORMATTER_PATTERN)));
+			ihsLogLineMap.put("requestCompleteTime",LocalTime.parse(timeString,DateTimeFormatter.ofPattern( IHSLogDataLineParser.IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_TIME_FORMATTER_PATTERN)));
 		}
 		{
 			UnaryOperator<String> preProcessor = (String line) -> ((String) regexParseOperator.parse( line, quotationPattern));
@@ -185,7 +185,7 @@ public class IHSLogDataParserTest {
 		System.out.println("================= when =================");
 		Object actual;
 		try(Stream<String> lineStream = Files.lines(Paths.get(testFilePath), Charset.defaultCharset())){
-			actual =  lineStream.parallel().map(parser::parseString).collect(Collectors.toList());
+			actual =  lineStream.parallel().map(parser::parse ).collect(Collectors.toList());
 		}
 		// then
 		assertThat(actual, is(expected));

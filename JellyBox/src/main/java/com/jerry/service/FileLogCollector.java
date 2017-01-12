@@ -28,7 +28,7 @@ public class FileLogCollector implements Service{
         Optional<Predicate<String>> OptionalFilter = Optional.ofNullable((Predicate<String>)requestObject.get(REQUEST_PARAM_FILTER));
         Object result=null;
         try(Stream<String> lineStream = Files.lines( Paths.get(fileName), Charset.defaultCharset())){
-            result= lineStream.parallel().filter( OptionalFilter.orElse((String line)->true)).map(ParserFactory.create(parserName, fileName)::parseString).collect( Collectors.toList());
+            result= lineStream.parallel().filter( OptionalFilter.orElse((String line)->true)).map(ParserFactory.create(parserName, fileName)::parse ).collect( Collectors.toList());
         }catch (IOException e) {
             e.printStackTrace();
         }

@@ -6,10 +6,10 @@ import static org.hamcrest.CoreMatchers.*;
 
 import org.junit.*;
 
-import com.jerry.parser.IHSLogDataParser;
+import com.jerry.parser.IHSLogDataLineParser;
 import com.jerry.parser.ParserFactory;
-import com.jerry.parser.WASSystemOutLogParser;
-import com.jerry.util.function.StringParser;
+import com.jerry.parser.WASSystemOutLogLineParser;
+import com.jerry.util.function.Parser;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -48,15 +48,15 @@ public class FileLogCollectorTest {
         Map<String,Object> requestParmameterMap = new HashMap<>(  );
         {
             requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_FILEPATH, testFilePath );
-            requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_IHS );
+            requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_IHS_LOG );
         }
 
         // given
         Object expected = null;
         {
-        	StringParser parser = new IHSLogDataParser(fileName);
+        	Parser parser = new IHSLogDataLineParser(fileName);
         	try(Stream<String> lineStream = Files.lines( Paths.get(testFilePath), Charset.defaultCharset())){
-        		expected = lineStream.parallel().map(parser::parseString).collect( Collectors.toList());
+        		expected = lineStream.parallel().map(parser::parse ).collect( Collectors.toList());
         	}
         }
 
@@ -76,13 +76,13 @@ public class FileLogCollectorTest {
         Map<String,Object> requestParmameterMap = new HashMap<>(  );
         {
             requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_FILEPATH, testFilePath );
-            requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_WAS );
+            requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_WAS_LOG );
             requestParmameterMap.put( FileLogCollector.REQUEST_PARAM_FILTER, lineFilterAtFirstCharIsSlash );
         }
         Object expected = null;
-        StringParser parser = new WASSystemOutLogParser( testFilePath );
+        Parser parser = new WASSystemOutLogLineParser( testFilePath );
         try(Stream<String> lineStream = Files.lines( Paths.get(testFilePath), Charset.defaultCharset())){
-            List<Object> parsedLines = lineStream.parallel().filter(lineFilterAtFirstCharIsSlash).map(parser::parseString).collect( Collectors.toList());
+            List<Object> parsedLines = lineStream.parallel().filter(lineFilterAtFirstCharIsSlash).map(parser::parse ).collect( Collectors.toList());
             expected = parsedLines;
         }catch (IOException e) {
             e.printStackTrace();

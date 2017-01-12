@@ -8,10 +8,8 @@ import org.json.simple.JSONObject;
 import org.junit.*;
 
 import com.jerry.parser.ParserFactory;
-import com.sun.javafx.scene.paint.GradientUtils.Parser;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +46,7 @@ public class ErrorListGetterTest {
 		Predicate<String> lineFilterAtFirstCharIsSlash = (String line) -> line.regionMatches(0, "/", 0, 1);
 		{
 			requestParmameterMap.put(FileLogCollector.REQUEST_PARAM_FILEPATH, filePath);
-			requestParmameterMap.put(FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_WAS);
+			requestParmameterMap.put(FileLogCollector.REQUEST_PARAM_PARSERNAME, ParserFactory.PARSERNAME_WAS_LOG );
 			requestParmameterMap.put(FileLogCollector.REQUEST_PARAM_FILTER, lineFilterAtFirstCharIsSlash);
 		}
 		
