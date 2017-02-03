@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import com.jerry.util.RegexMatcher;
+
 public class IHSLogDataLineParser extends DefaultLineParser {
 	private String category;
 	private Function<String, Object> requestLineFunction, statusFunction, requestMethodFunction, clientIpFunction,
@@ -31,50 +33,50 @@ public class IHSLogDataLineParser extends DefaultLineParser {
 	private void initFunctions() {
 		// requestLine
 		{
-			UnaryOperator<String> preProcessor = (String line) -> ((String) REGEX_PARSE_OPERATOR.parse( line, QUOTATION_PATTERN));
-			UnaryOperator<String> mainProcessor = (String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, SPACE_PATTERN);
+			UnaryOperator<String> preProcessor = (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse( line, QUOTATION_PATTERN));
+			UnaryOperator<String> mainProcessor = (String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, SPACE_PATTERN);
 			requestLineFunction =  preProcessor.andThen(mainProcessor).andThen(offsetIgnoreSubsting( 1,1 ));
 		}
 		//status
 		{
-			UnaryOperator<String> mainProcessor = (String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, STATUS_PATTERN);
+			UnaryOperator<String> mainProcessor = (String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, STATUS_PATTERN);
 			statusFunction = mainProcessor.andThen(offsetIgnoreSubsting( 2,1 ));
 		}
 		//requestMethod
 		{
-			UnaryOperator<String> preProcessor = (String line) -> ((String) REGEX_PARSE_OPERATOR.parse( line, QUOTATION_PATTERN));
-			UnaryOperator<String> mainProcessor = (String line) -> (String) REGEX_PARSE_OPERATOR.parse(line, REQUEST_METHOD_PATTERN);
+			UnaryOperator<String> preProcessor = (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse( line, QUOTATION_PATTERN));
+			UnaryOperator<String> mainProcessor = (String line) -> (String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, REQUEST_METHOD_PATTERN);
 			requestMethodFunction = preProcessor.andThen(mainProcessor).andThen(offsetIgnoreSubsting( 1,1 ));
 		}
 		//clientIp
 		{
-			clientIpFunction = (String line) -> (String) REGEX_PARSE_OPERATOR.parse(line, IP_ADDRESS_PATTERN);
+			clientIpFunction = (String line) -> (String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, IP_ADDRESS_PATTERN);
 		}
 		//requestCompleteDate
 		{
-			UnaryOperator<String> preProcessor = (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", "");
+			UnaryOperator<String> preProcessor = (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", "");
 			UnaryOperator<String> mainProcessor = (	String line) -> (String) FIXED_LENGTH_PARSE_OPERATOR.parse(line, REQUEST_COMPLETE_DATE_PATTERN);
 			requestCompleteDateFunctoin = (String line)->  LocalDate.parse(preProcessor.andThen(mainProcessor).apply(line), DateTimeFormatter.ofPattern(IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_DATE_FORMATTER_PATTERN,Locale.US));
 		}
 		//requestCompleteTime
 		{
 			UnaryOperator<String> preProcessor = (
-					String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN));
+					String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN));
 			UnaryOperator<String> mainProcessor = (
-					String line) -> (String) REGEX_PARSE_OPERATOR.parse(line, REQUEST_COMPLETE_TIME_PATTERN);
+					String line) -> (String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, REQUEST_COMPLETE_TIME_PATTERN);
 			requestCompleteTimeFunction= (String line)->  LocalTime.parse(preProcessor.andThen(mainProcessor).andThen(offsetIgnoreSubsting(1, 1)).apply(line), DateTimeFormatter.ofPattern(IHS_LOG_DATA_PARSER_REQUEST_COMPLETE_TIME_FORMATTER_PATTERN,Locale.US));
 		}
 		//module
 		{
 			UnaryOperator<String> preProcessor = (String line)-> (String) requestLineFunction.apply(line);
-			UnaryOperator<String> mainProcessor = (String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, MODULE_PATERN);
+			UnaryOperator<String> mainProcessor = (String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, MODULE_PATERN);
 			UnaryOperator<String> postProcessor =(String line) ->line.replaceAll(SLASH,"");
 			moduleFunction = preProcessor.andThen(mainProcessor).andThen(postProcessor);
 		}
 		//interface
 		{
 			UnaryOperator<String> preProcessor = (String line)-> (String) requestLineFunction.apply(line);
-			UnaryOperator<String> mainProcessor = (String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, INTERFACE_PATTERN);
+			UnaryOperator<String> mainProcessor = (String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, INTERFACE_PATTERN);
 			UnaryOperator<String> postProcessor =(String line) ->line.replaceAll(INTERFACE_HEADER,"");
 			interfaceFunction = preProcessor.andThen(mainProcessor).andThen(postProcessor);
 		}
@@ -84,7 +86,7 @@ public class IHSLogDataLineParser extends DefaultLineParser {
 
 	private void initCategory(String fileName) {
 		UnaryOperator<String> mainProcessor = (
-				String line) -> (String) REGEX_PARSE_OPERATOR.parse(line, IHSLOGDATA_CATEGORY_PATTERN);
+				String line) -> (String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, IHSLOGDATA_CATEGORY_PATTERN);
 		UnaryOperator<String> postProcessor = (String line) -> line.replace(DASH, "");
 		category = STRING_EXTRACTOR.extract(fileName, NO_ACTION_OPERATOR, mainProcessor, postProcessor);
 	}

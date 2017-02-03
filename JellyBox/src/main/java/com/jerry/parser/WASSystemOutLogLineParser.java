@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.function.UnaryOperator;
 
+import com.jerry.util.RegexMatcher;
+
 public class WASSystemOutLogLineParser extends DefaultLineParser {
 
 	private String serverName;
@@ -17,7 +19,7 @@ public class WASSystemOutLogLineParser extends DefaultLineParser {
 	private static final String SERVERNAME_PATTERN=CHAR_NUMBER+DOT+CHAR_NUMBER;
 	private void initServerName(String fileName) {
 		serverName =STRING_EXTRACTOR.extract( fileName , NO_ACTION_OPERATOR,
-				(String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, SERVERNAME_PATTERN),
+				(String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, SERVERNAME_PATTERN),
 				NO_ACTION_OPERATOR);
 	}
 
@@ -45,38 +47,38 @@ public class WASSystemOutLogLineParser extends DefaultLineParser {
 	private static final String CODE_PATTERN="([A-Z]{4}|[A-Z]{5})([0-9]{4}|[0-9]{5})"+LEVEL;
 	private Object extractCode(String target) {
 		return STRING_EXTRACTOR.extract(target, NO_ACTION_OPERATOR,
-				(String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, CODE_PATTERN)),
+				(String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, CODE_PATTERN)),
 				(String line)->line.replace(":", ""));
 	}
 	private Object extractLevel(String target) {
 		return STRING_EXTRACTOR.extract(target, NO_ACTION_OPERATOR,
-				(String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, LEVEL_PATTERN),
+				(String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, LEVEL_PATTERN),
 				REMOVE_SPACECHAR_OPERATOR);
 	}
 	private static final String THREAD_NAME_PATTERN = RIGHTBRACKET+SPACE+ANY+SPACE;
 	private static final String PRE_PROCESS_COMPONENT_PATTERN=THREAD_NAME_PATTERN+ANY+SPACE;
 	private static final String PROCESS_COMPONENT_PATTERN =SPACE+ANY+SPACE;
 	private Object extractProcessComponent(String target) {
-		return STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, PRE_PROCESS_COMPONENT_PATTERN)).replace("] ", ""),
-				(String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, PROCESS_COMPONENT_PATTERN),
+		return STRING_EXTRACTOR.extract(target, (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, PRE_PROCESS_COMPONENT_PATTERN)).replace("] ", ""),
+				(String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, PROCESS_COMPONENT_PATTERN),
 				REMOVE_SPACECHAR_OPERATOR);
 	}
 	private Object extractThreadName(String target) {
 		return STRING_EXTRACTOR.extract(target, NO_ACTION_OPERATOR,
-				(String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, THREAD_NAME_PATTERN)),
+				(String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, THREAD_NAME_PATTERN)),
 				(String line)-> line.replace("] ", ""));
 	}
 	private static final String WASSYSTEMOUTLOG_TIMESTAMP_PATTERN="([0-9]{1}|[0-9]{2}):([0-9]{2}):([0-9]{2}):([0-9]{3})";
 	private Object extractTime(String target) {
-		String timeString = STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
-				(String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_TIMESTAMP_PATTERN)),
+		String timeString = STRING_EXTRACTOR.extract(target, (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
+				(String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_TIMESTAMP_PATTERN)),
 				NO_ACTION_OPERATOR );
 		return LocalTime.parse(timeString, DateTimeFormatter.ofPattern( "H:mm:ss:SSS" ));
 	}
 	private String WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN="(([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2})((\\. )|(/))([0-9]{1}|[0-9]{2}) )";
 	private Object extractDate(String target) {
-		String dateString= STRING_EXTRACTOR.extract(target, (String line) -> ((String) REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
-				(String line) ->(String) REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN),
+		String dateString= STRING_EXTRACTOR.extract(target, (String line) -> ((String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, BRACKET_PATTERN)).replace("[", ""),
+				(String line) ->(String) RegexMatcher.REGEX_PARSE_OPERATOR.parse(line, WASSYSTEMOUTLOG_FIXED_LENGTH_PATTERN),
 				REMOVE_SPACECHAR_OPERATOR);
 		
 		return LocalDate.parse( dateString, DateTimeFormatter.ofPattern( dateString.contains( "/" )?"MM/dd/yy":"yy.MM.d" ) );

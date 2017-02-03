@@ -32,20 +32,6 @@ abstract public class DefaultLineParser implements Parser {
 
 	// default operator define
 	static final UnaryOperator<String> NO_ACTION_OPERATOR = (String line) -> line;
-	// parser define
-	static final RegexParseOperator REGEX_PARSE_OPERATOR = (String line, Object columnRegex) -> {
-		Pattern pattern = Pattern.compile((String) columnRegex);
-		Matcher matcher = pattern.matcher(line);
-		String result;
-		if (matcher.find()) {
-			int beginOffset = matcher.start();
-			int endOffset = matcher.end();
-			result = line.substring(beginOffset, endOffset);
-		} else {
-			result = "null";
-		}
-		return result;
-	};
 	final static RegexParseOperator EXCLUDE_PARSE_OPERATOR = (String line, Object columnRegex) -> {
 		Pattern pattern = Pattern.compile((String) columnRegex);
 		Matcher matcher = pattern.matcher(line);
